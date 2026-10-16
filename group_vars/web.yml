@@ -1,3 +1,5 @@
 firewall_allowed_ports:
-  - { port: 80,  proto: tcp }
+  - { port: 80, proto: tcp }
   - { port: 443, proto: tcp }
+
+firewall_ssh_vpn_only: "{{ not (bootstrap | default(false) | bool) }}"

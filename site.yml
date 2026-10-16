@@ -1,7 +1,13 @@
 ---
 - name: Base hardening (SSH + firewall)
-  hosts: all
+  hosts: containers
   become: true
   roles:
     - ssh_hardening
     - firewall
+
+- name: WireGuard VPN
+  hosts: vpn
+  become: true
+  roles:
+    - wireguard

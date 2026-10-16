@@ -5,11 +5,29 @@
     state: present
     update_cache: true
 
-- name: Allow SSH first (so we don't lock ourselves out)
+- name: Allow SSH from anywhere (bootstrap)
   community.general.ufw:
     rule: allow
     port: "22"
     proto: tcp
+  when: not firewall_ssh_vpn_only
+
+- name: Allow SSH only on the VPN interface
+  community.general.ufw:
+    rule: allow
+    interface: wg0
+    direction: in
+    port: "22"
+    proto: tcp
+  when: firewall_ssh_vpn_only
+
+- name: Remove global SSH rule
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+    delete: true
+  when: firewall_ssh_vpn_only
 
 - name: Allow service ports
   community.general.ufw:

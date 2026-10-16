@@ -1,0 +1,5 @@
+wireguard_interface: wglab       # имя интерфейса на твоём хосте
+wireguard_address: 10.8.0.10/24
+wireguard_peers:
+  - { name: ubu2, allowed_ips: 10.8.0.0/24, endpoint: "172.28.0.12:51820", keepalive: 25 }
+ansible_python_interpreter: /usr/bin/python3

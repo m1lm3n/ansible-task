@@ -1,3 +1,4 @@
 firewall_allowed_ports:
-  - { port: 9090, proto: tcp }
-  - { port: 3000, proto: tcp }
+  - { port: 9090, proto: tcp }   # Prometheus
+  - { port: 3000, proto: tcp }   # Grafana
+  - { port: 51820, proto: udp }   # WireGuard

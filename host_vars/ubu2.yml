@@ -1,0 +1,6 @@
+wireguard_address: 10.8.0.1/24
+wireguard_listen_port: 51820
+wireguard_forward: true          # хаб пересылает трафик между пирами
+wireguard_peers:
+  - { name: ubu1, allowed_ips: 10.8.0.2/32 }
+  - { name: vpn_admin, allowed_ips: 10.8.0.10/32 }

@@ -7,7 +7,9 @@ services:
     ports:
       - "2221:22"
       - "8080:80"
-    networks: [lab]
+    networks:
+      lab:
+        ipv4_address: 172.28.0.11
 
   ubu2:
     build: .
@@ -18,7 +20,12 @@ services:
       - "2222:22"
       - "9090:9090"
       - "3000:3000"
-    networks: [lab]
+    networks:
+      lab:
+        ipv4_address: 172.28.0.12
 
 networks:
   lab:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24

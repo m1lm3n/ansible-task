@@ -1,0 +1,71 @@
+---
+- name: Install wireguard-tools
+  ansible.builtin.apt:
+    name: wireguard-tools
+    state: present
+    update_cache: true
+
+- name: Create /etc/wireguard
+  ansible.builtin.file:
+    path: /etc/wireguard
+    state: directory
+    mode: "0700"
+
+- name: Generate private key (once, stays on the host)
+  ansible.builtin.shell: umask 077 && wg genkey > /etc/wireguard/{{ wireguard_interface }}.key
+  args:
+    creates: "/etc/wireguard/{{ wireguard_interface }}.key"
+  no_log: true
+
+- name: Read private key
+  ansible.builtin.slurp:
+    src: "/etc/wireguard/{{ wireguard_interface }}.key"
+  register: wireguard_key_raw
+  no_log: true
+
+- name: Derive public key
+  ansible.builtin.command: wg pubkey
+  args:
+    stdin: "{{ wireguard_key_raw.content | b64decode | trim }}"
+  register: wireguard_pub
+  changed_when: false
+  no_log: true
+
+- name: Save keys as facts (shared between hosts via hostvars)
+  ansible.builtin.set_fact:
+    wireguard_private: "{{ wireguard_key_raw.content | b64decode | trim }}"
+    wireguard_pubkey: "{{ wireguard_pub.stdout }}"
+  no_log: true
+
+- name: Enable IP forwarding (hub only)
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_file: /etc/sysctl.d/99-wireguard.conf
+    sysctl_set: true
+    reload: true
+  when: wireguard_forward | default(false)
+
+- name: Allow forwarding between VPN peers (hub only)
+  community.general.ufw:
+    rule: allow
+    route: true
+    interface_in: "{{ wireguard_interface }}"
+    interface_out: "{{ wireguard_interface }}"
+  when: wireguard_forward | default(false)
+
+- name: Render WireGuard config
+  ansible.builtin.template:
+    src: wg.conf.j2
+    dest: "/etc/wireguard/{{ wireguard_interface }}.conf"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  notify: Restart wireguard
+
+- name: Enable and start WireGuard
+  ansible.builtin.service:
+    name: "wg-quick@{{ wireguard_interface }}"
+    enabled: true
+    state: started

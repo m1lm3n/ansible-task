@@ -1,0 +1,7 @@
+# bootstrap=true: заходим через проброшенный порт; иначе только через VPN
+ansible_host: "{{ '127.0.0.1' if (bootstrap | default(false) | bool) else '10.8.0.2' }}"
+ansible_port: "{{ 2221 if (bootstrap | default(false) | bool) else 22 }}"
+
+wireguard_address: 10.8.0.2/24
+wireguard_peers:
+  - { name: ubu2, allowed_ips: 10.8.0.0/24, endpoint: "172.28.0.12:51820", keepalive: 25 }
