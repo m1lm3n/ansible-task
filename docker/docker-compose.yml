@@ -1,0 +1,24 @@
+services:
+  ubu1:
+    build: .
+    container_name: ubu1
+    hostname: ubu1
+    privileged: true
+    ports:
+      - "2221:22"
+      - "8080:80"
+    networks: [lab]
+
+  ubu2:
+    build: .
+    container_name: ubu2
+    hostname: ubu2
+    privileged: true
+    ports:
+      - "2222:22"
+      - "9090:9090"
+      - "3000:3000"
+    networks: [lab]
+
+networks:
+  lab:
