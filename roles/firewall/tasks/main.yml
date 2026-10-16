@@ -1,0 +1,33 @@
+---
+- name: Install ufw
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+    update_cache: true
+
+- name: Allow SSH first (so we don't lock ourselves out)
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Allow service ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.port | string }}"
+    proto: "{{ item.proto }}"
+  loop: "{{ firewall_allowed_ports }}"
+
+- name: Default deny incoming
+  community.general.ufw:
+    default: deny
+    direction: incoming
+
+- name: Default allow outgoing
+  community.general.ufw:
+    default: allow
+    direction: outgoing
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled

@@ -1,0 +1,7 @@
+---
+- name: Base hardening (SSH + firewall)
+  hosts: all
+  become: true
+  roles:
+    - ssh_hardening
+    - firewall
