@@ -1,0 +1,27 @@
+---
+- name: Install Grafana Alloy
+  ansible.builtin.apt:
+    name: alloy
+    state: present
+
+- name: Let alloy read nginx and ModSecurity logs (group adm)
+  ansible.builtin.user:
+    name: alloy
+    groups: adm
+    append: true
+  notify: Restart alloy
+
+- name: Alloy config
+  ansible.builtin.template:
+    src: config.alloy.j2
+    dest: /etc/alloy/config.alloy
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart alloy
+
+- name: Enable and start Alloy
+  ansible.builtin.service:
+    name: alloy
+    enabled: true
+    state: started

@@ -1,0 +1,38 @@
+local.file_match "nginx" {
+  path_targets = [
+    {"__path__" = "/var/log/nginx/access.log", "job" = "nginx", "log_type" = "access"},
+    {"__path__" = "/var/log/nginx/error.log", "job" = "nginx", "log_type" = "error"},
+  ]
+}
+
+loki.source.file "nginx" {
+  targets    = local.file_match.nginx.targets
+  forward_to = [loki.write.ubu2.receiver]
+}
+
+local.file_match "modsec" {
+  path_targets = [
+    {"__path__" = "/var/log/modsec_audit.log", "job" = "modsecurity", "log_type" = "audit"},
+  ]
+}
+
+loki.source.file "modsec" {
+  targets    = local.file_match.modsec.targets
+  forward_to = [loki.process.modsec.receiver]
+}
+
+// One audit event = sections A..Z, glue them into a single record
+loki.process "modsec" {
+  stage.multiline {
+    firstline = "^---[0-9a-zA-Z]+---A--$"
+    max_lines = 500
+  }
+  forward_to = [loki.write.ubu2.receiver]
+}
+
+loki.write "ubu2" {
+  endpoint {
+    url = "{{ alloy_loki_url }}"
+  }
+  external_labels = {"host" = "{{ inventory_hostname }}"}
+}

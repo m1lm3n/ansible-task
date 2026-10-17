@@ -1,0 +1,5 @@
+---
+- name: Restart loki
+  ansible.builtin.service:
+    name: loki
+    state: restarted

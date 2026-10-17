@@ -1,0 +1,43 @@
+---
+- name: Install Grafana
+  ansible.builtin.apt:
+    name: grafana
+    state: present
+
+- name: Grafana config
+  ansible.builtin.template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    owner: root
+    group: grafana
+    mode: "0640"
+  no_log: true
+  notify: Restart grafana
+
+- name: Provision Loki datasource
+  ansible.builtin.template:
+    src: datasource-loki.yml.j2
+    dest: /etc/grafana/provisioning/datasources/loki.yml
+    owner: root
+    group: grafana
+    mode: "0640"
+  notify: Restart grafana
+
+- name: Enable and start Grafana
+  ansible.builtin.service:
+    name: grafana-server
+    enabled: true
+    state: started
+
+- name: Apply pending restarts before the health check
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for Grafana to become healthy
+  ansible.builtin.uri:
+    url: http://127.0.0.1:3000/api/health
+    status_code: 200
+  register: grafana_health
+  retries: 12
+  delay: 5
+  until: grafana_health.status == 200
+  changed_when: false

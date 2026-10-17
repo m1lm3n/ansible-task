@@ -45,3 +45,18 @@ peer: 3CHGkqdW51Qd3PHHgyrSEo40Yhy+wFjCF0uecgIbIhU=
 - SecRuleEngine On, CRS 3.3.5, paranoia level 1, порог блокировки 5.
 - Проверка: `/` = 200; XSS, SQLi, path traversal = 403;
   события в `/var/log/modsec_audit.log` (правило 949110).
+
+## Задача 5: Loki + Grafana
+
+- Роли `loki`, `grafana` (ubu2) и `alloy` (ubu1), пакеты из apt-репозитория Grafana (`grafana_apt_repo`).
+- Вместо Promtail используется Grafana Alloy.
+- Alloy читает nginx access/error и ModSecurity audit-лог (многострочные события
+  склеиваются по секциям) и шлёт в Loki на 10.8.0.1:3100 через VPN.
+- Loki (3100) и Grafana (3000) доступны только через wg0 (ufw), наружу не проброшены.
+- Пароль админа Grafana генерируется на контроллере в `.secrets/` (не в Git).
+- Хранение логов: 7 дней (`loki_retention`).
+
+### Проблемы по ходу
+- Loki не стартовал: пакет создаёт пользователя `loki`, но не каталог `/var/lib/loki`.
+  Исправлено задачей `file` в роли.
+- Ограничение: `/var/log/modsec_audit.log` не ротируется, в проде нужен logrotate.

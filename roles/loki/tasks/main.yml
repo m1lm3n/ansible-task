@@ -1,0 +1,40 @@
+---
+- name: Install Loki
+  ansible.builtin.apt:
+    name: loki
+    state: present
+
+- name: Create Loki data directory
+  ansible.builtin.file:
+    path: /var/lib/loki
+    state: directory
+    owner: loki
+    mode: "0750"
+
+- name: Loki config
+  ansible.builtin.template:
+    src: loki-config.yml.j2
+    dest: /etc/loki/config.yml
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart loki
+
+- name: Enable and start Loki
+  ansible.builtin.service:
+    name: loki
+    enabled: true
+    state: started
+
+- name: Apply pending restarts before the readiness check
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for Loki to become ready
+  ansible.builtin.uri:
+    url: http://127.0.0.1:3100/ready
+    status_code: 200
+  register: loki_ready
+  retries: 12
+  delay: 5
+  until: loki_ready.status == 200
+  changed_when: false

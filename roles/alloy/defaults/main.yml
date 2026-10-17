@@ -1,0 +1,2 @@
+---
+alloy_loki_url: http://10.8.0.1:3100/loki/api/v1/push
