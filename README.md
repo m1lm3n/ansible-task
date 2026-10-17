@@ -98,6 +98,7 @@ peer: 3CHGkqdW51Qd3PHHgyrSEo40Yhy+wFjCF0uecgIbIhU=
 поэтому скрипт проверяет отсутствие `Access denied`, а не отсутствие записи.
 
 ## First Start
+```bash
 cd ~/ansible-task
 sudo docker compose -f docker/docker-compose.yml down
 sudo docker compose -f docker/docker-compose.yml up -d --build
@@ -106,4 +107,5 @@ ansible-playbook site.yml -e bootstrap=true
 ansible-playbook site.yml
 ansible-playbook site.yml          # в RECAP везде changed=0
 ./scripts/demo.sh
+```
 
