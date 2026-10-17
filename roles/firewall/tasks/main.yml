@@ -49,3 +49,12 @@
 - name: Enable ufw
   community.general.ufw:
     state: enabled
+
+- name: Allow service ports only on the VPN interface
+  community.general.ufw:
+    rule: allow
+    interface: wg0
+    direction: in
+    port: "{{ item.port | string }}"
+    proto: "{{ item.proto }}"
+  loop: "{{ firewall_vpn_only_ports }}"

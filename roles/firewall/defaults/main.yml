@@ -1,2 +1,3 @@
 ---
 firewall_ssh_vpn_only: false
+firewall_vpn_only_ports: []

@@ -35,3 +35,13 @@ peer: 3CHGkqdW51Qd3PHHgyrSEo40Yhy+wFjCF0uecgIbIhU=
   latest handshake: 1 second ago
   transfer: 92 B received, 180 B sent
   persistent keepalive: every 25 seconds
+
+## Задача 4: Nginx + ModSecurity (OWASP CRS)
+
+- Роль `nginx_waf` на ubu1: nginx, libnginx-mod-http-modsecurity, modsecurity-crs (пакеты Ubuntu 24.04).
+- Пакеты вместо Docker-образа: ubu1 сам является контейнером.
+- `modsecurity.conf-recommended` в пакетах Ubuntu нет, поэтому базовый конфиг
+  ModSecurity лежит в шаблоне роли (`modsec-main.conf.j2`).
+- SecRuleEngine On, CRS 3.3.5, paranoia level 1, порог блокировки 5.
+- Проверка: `/` = 200; XSS, SQLi, path traversal = 403;
+  события в `/var/log/modsec_audit.log` (правило 949110).

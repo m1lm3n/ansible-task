@@ -18,8 +18,6 @@ services:
     privileged: true
     ports:
       - "2222:22"
-      - "9090:9090"
-      - "3000:3000"
     networks:
       lab:
         ipv4_address: 172.28.0.12

@@ -1,4 +1,6 @@
+---
 firewall_allowed_ports:
-  - { port: 9090, proto: tcp }   # Prometheus
-  - { port: 3000, proto: tcp }   # Grafana
   - { port: 51820, proto: udp }   # WireGuard
+firewall_vpn_only_ports:
+  - { port: 3000, proto: tcp }    # Grafana, только через wg0
+  - { port: 3100, proto: tcp }    # Loki, только через wg0
