@@ -1,0 +1,14 @@
+SecRuleEngine {{ nginx_waf_engine }}
+SecRequestBodyAccess On
+SecRequestBodyLimit 13107200
+SecRequestBodyNoFilesLimit 131072
+SecResponseBodyAccess Off
+
+SecAuditEngine RelevantOnly
+SecAuditLogRelevantStatus "^(?:5|4(?!04))"
+SecAuditLogParts ABIJDEFHZ
+SecAuditLogType Serial
+SecAuditLog /var/log/modsec_audit.log
+
+Include /etc/modsecurity/crs/crs-setup.conf
+Include /usr/share/modsecurity-crs/rules/*.conf

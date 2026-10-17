@@ -1,0 +1,3 @@
+---
+nginx_waf_engine: "On"
+nginx_waf_server_name: "_"

@@ -1,0 +1,55 @@
+---
+- name: Install nginx, ModSecurity connector and OWASP CRS
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - libnginx-mod-http-modsecurity
+      - modsecurity-crs
+    state: present
+    update_cache: true
+
+- name: Remove default nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: Create ModSecurity config dir for nginx
+  ansible.builtin.file:
+    path: /etc/nginx/modsec
+    state: directory
+    mode: "0755"
+
+- name: ModSecurity main config (recommended base + CRS)
+  ansible.builtin.template:
+    src: modsec-main.conf.j2
+    dest: /etc/nginx/modsec/main.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Landing page
+  ansible.builtin.copy:
+    dest: /var/www/html/index.html
+    content: "<h1>ubu1: nginx + ModSecurity (OWASP CRS)</h1>\n"
+    mode: "0644"
+
+- name: Nginx server with WAF enabled
+  ansible.builtin.template:
+    src: waf.conf.j2
+    dest: /etc/nginx/conf.d/waf.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Validate nginx config
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
+- name: Enable and start nginx
+  ansible.builtin.service:
+    name: nginx
+    enabled: true
+    state: started

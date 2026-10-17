@@ -1,0 +1,14 @@
+server {
+    listen 80 default_server;
+    server_name {{ nginx_waf_server_name }};
+
+    root /var/www/html;
+    index index.html;
+
+    modsecurity on;
+    modsecurity_rules_file /etc/nginx/modsec/main.conf;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}

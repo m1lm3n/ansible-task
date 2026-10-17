@@ -11,3 +11,9 @@
   become: true
   roles:
     - wireguard
+
+- name: Web server with WAF
+  hosts: web
+  become: true
+  roles:
+    - nginx_waf
