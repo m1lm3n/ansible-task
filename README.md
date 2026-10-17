@@ -1,7 +1,25 @@
 ## Задача 1: Docker ubu1 и ubu2
 
-cd ~/ansible-task
+Два контейнера Ubuntu 24.04 (systemd + sshd) вместо ВМ. Ansible управляет ими по SSH-ключу.
+
+| Хост | Роль | IP | SSH |
+|------|------|----|-----|
+| ubu1 | веб | 172.28.0.11 | 127.0.0.1:2221 |
+| ubu2 | мониторинг | 172.28.0.12 | 127.0.0.1:2222 |
+
+### Запуск
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/ubu_lab -N "" -C ansible-lab
+cp ~/.ssh/ubu_lab.pub docker/ssh/authorized_keys
 sudo docker compose -f docker/docker-compose.yml up -d --build
+ansible all -m ping
+```
+
+### Проблемы
+
+- `permission denied ... docker.sock`: пользователя нужно добавить в группу `docker` и перелогиниться.
+- Контейнеры `privileged`, так как systemd, ufw и WireGuard требуют доступа к ядру (только для лаборатории).
 
 ## Задача 2: Firewall и SSH hardening
 
@@ -60,3 +78,32 @@ peer: 3CHGkqdW51Qd3PHHgyrSEo40Yhy+wFjCF0uecgIbIhU=
 - Loki не стартовал: пакет создаёт пользователя `loki`, но не каталог `/var/lib/loki`.
   Исправлено задачей `file` в роли.
 - Ограничение: `/var/log/modsec_audit.log` не ротируется, в проде нужен logrotate.
+
+## Задача 6: Демонстрация
+
+`./scripts/demo.sh` (на хосте при поднятом VPN):
+1. Обычный запрос -> 200, виден в nginx access-логе в Loki, события Access denied нет.
+2. SQLi -> 403, `Access denied` + правило CRS 942100 в логе ModSecurity,
+   403 в nginx access-логе.
+
+Каждый запрос несёт уникальный маркер, по нему скрипт ищет записи в Loki.
+
+Дашборд: http://10.8.0.1:3000 -> Lab -> "nginx + ModSecurity (ubu1)".
+Скриншот: docs/dashboard.png, вывод скрипта: docs/demo-output.txt.
+
+### Замечание
+Обычные запросы тоже попадают в audit-лог ModSecurity: правило 920350
+(Host header is a numeric IP address) срабатывает как предупреждение,
+потому что мы ходим по IP, а не по имени. Запрос при этом не блокируется,
+поэтому скрипт проверяет отсутствие `Access denied`, а не отсутствие записи.
+
+## First Start
+cd ~/ansible-task
+sudo docker compose -f docker/docker-compose.yml down
+sudo docker compose -f docker/docker-compose.yml up -d --build
+sleep 10
+ansible-playbook site.yml -e bootstrap=true
+ansible-playbook site.yml
+ansible-playbook site.yml          # в RECAP везде changed=0
+./scripts/demo.sh
+

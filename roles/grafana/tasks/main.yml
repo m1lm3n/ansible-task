@@ -41,3 +41,33 @@
   delay: 5
   until: grafana_health.status == 200
   changed_when: false
+
+- name: Dashboards directory
+  ansible.builtin.file:
+    path: /var/lib/grafana/dashboards
+    state: directory
+    owner: grafana
+    mode: "0755"
+
+- name: Dashboard provider
+  ansible.builtin.copy:
+    dest: /etc/grafana/provisioning/dashboards/lab.yml
+    content: |
+      apiVersion: 1
+      providers:
+        - name: lab
+          folder: Lab
+          type: file
+          options:
+            path: /var/lib/grafana/dashboards
+    owner: root
+    group: grafana
+    mode: "0640"
+  notify: Restart grafana
+
+- name: Dashboard nginx + ModSecurity
+  ansible.builtin.copy:
+    src: nginx-waf.json
+    dest: /var/lib/grafana/dashboards/nginx-waf.json
+    owner: grafana
+    mode: "0644"
