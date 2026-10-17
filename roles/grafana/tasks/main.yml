@@ -71,3 +71,31 @@
     dest: /var/lib/grafana/dashboards/nginx-waf.json
     owner: grafana
     mode: "0644"
+
+- name: Alert contact point (Telegram)
+  ansible.builtin.template:
+    src: alert-contact.yml.j2
+    dest: /etc/grafana/provisioning/alerting/contact.yml
+    owner: root
+    group: grafana
+    mode: "0640"
+  no_log: true
+  notify: Restart grafana
+
+- name: Alert notification policy
+  ansible.builtin.copy:
+    src: alert-policies.yml
+    dest: /etc/grafana/provisioning/alerting/policies.yml
+    owner: root
+    group: grafana
+    mode: "0640"
+  notify: Restart grafana
+
+- name: Alert rules
+  ansible.builtin.copy:
+    src: alert-rules.yml
+    dest: /etc/grafana/provisioning/alerting/rules.yml
+    owner: root
+    group: grafana
+    mode: "0640"
+  notify: Restart grafana

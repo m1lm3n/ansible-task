@@ -1,0 +1,44 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: waf
+    folder: Lab
+    interval: 30s
+    rules:
+      - uid: waf-ip-flood
+        title: WAF blocked more than 5 requests from one IP per minute
+        condition: C
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: 'WAF: {{ $labels.ip }} blocked {{ printf "%.0f" $values.B.Value }} times in 1m'
+          count: '{{ printf "%.0f" $values.B.Value }}'
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: loki
+            model:
+              refId: A
+              queryType: instant
+              editorMode: code
+              expr: |-
+                sum by (ip) (count_over_time({job="modsecurity"} |= "Access denied" | regexp `\] \S+ (?P<ip>\d{1,3}(?:\.\d{1,3}){3}) \d+ ` [1m]))
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: reduce
+              expression: A
+              reducer: last
+              settings: { mode: dropNN }
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [5] }

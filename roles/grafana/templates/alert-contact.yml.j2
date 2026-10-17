@@ -1,0 +1,16 @@
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: telegram
+    receivers:
+      - uid: telegram-waf
+        type: telegram
+        disableResolveMessage: false
+        settings:
+          botToken: {{ grafana_telegram_token }}
+          chatid: "{{ grafana_telegram_chat_id }}"
+          message: |-
+            {% raw %}{{ range .Alerts }}{{ if eq .Status "firing" }}🚨 WAF: атака
+            IP: {{ .Labels.ip }}
+            Заблокировано запросов за 1 мин: {{ .Annotations.count }}{{ else }}✅ Атака с IP {{ .Labels.ip }} прекратилась{{ end }}
+            {{ end }}{% endraw %}

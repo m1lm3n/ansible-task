@@ -3,3 +3,6 @@ grafana_admin_user: admin
 # Generated once on the controller, stored in .secrets/ (not in Git)
 grafana_admin_password: "{{ lookup('ansible.builtin.password', playbook_dir ~ '/.secrets/grafana_admin_password length=20 chars=ascii_letters,digits') }}"
 grafana_loki_url: http://127.0.0.1:3100
+
+grafana_telegram_token: "{{ lookup('ansible.builtin.file', playbook_dir ~ '/.secrets/telegram_bot_token') | trim }}"
+grafana_telegram_chat_id: "{{ lookup('ansible.builtin.file', playbook_dir ~ '/.secrets/telegram_chat_id') | trim }}"

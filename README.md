@@ -14,6 +14,12 @@ ssh-keygen -t ed25519 -f ~/.ssh/ubu_lab -N "" -C ansible-lab
 cp ~/.ssh/ubu_lab.pub docker/ssh/authorized_keys
 sudo docker compose -f docker/docker-compose.yml up -d --build
 ansible all -m ping
+sleep 10
+ansible-playbook site.yml -e bootstrap=true
+ansible-playbook site.yml
+ansible-playbook site.yml          # в RECAP везде changed=0
+./scripts/demo.sh
+./scripts/load.sh
 ```
 
 ### Проблемы
@@ -97,15 +103,14 @@ peer: 3CHGkqdW51Qd3PHHgyrSEo40Yhy+wFjCF0uecgIbIhU=
 потому что мы ходим по IP, а не по имени. Запрос при этом не блокируется,
 поэтому скрипт проверяет отсутствие `Access denied`, а не отсутствие записи.
 
-## First Start
-```bash
-cd ~/ansible-task
-sudo docker compose -f docker/docker-compose.yml down
-sudo docker compose -f docker/docker-compose.yml up -d --build
-sleep 10
-ansible-playbook site.yml -e bootstrap=true
-ansible-playbook site.yml
-ansible-playbook site.yml          # в RECAP везде changed=0
-./scripts/demo.sh
-```
+## Задача 7*: Алерт в Telegram
 
+- Grafana Alerting, всё провижинится Ansible (роль `grafana`, каталог provisioning/alerting).
+- Правило: больше 5 блокировок WAF (`Access denied` в audit-логе) с одного IP за 1 минуту,
+  проверка каждые 30 с. IP извлекается из audit-записи регулярным выражением в LogQL.
+- Уведомление в Telegram: IP и число запросов; при завершении атаки приходит отбой.
+- Токен бота и chat id лежат в `.secrets/` (не в Git):
+  `telegram_bot_token`, `telegram_chat_id`.
+- Тест: `./scripts/alert_test.sh`.
+- Ограничение: запросы с хоста приходят через docker-порт, поэтому WAF видит
+  адрес шлюза docker-сети 172.28.0.1, а не внешний IP.
