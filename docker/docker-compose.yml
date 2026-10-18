@@ -21,6 +21,15 @@ services:
     networks:
       lab:
         ipv4_address: 172.28.0.12
+    volumes:
+      - ubu2_loki:/var/lib/loki
+      - ubu2_grafana:/var/lib/grafana
+      - ubu2_wg:/etc/wireguard
+
+volumes:
+  ubu2_loki:
+  ubu2_grafana:
+  ubu2_wg:
 
 networks:
   lab:
